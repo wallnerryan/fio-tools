@@ -2,6 +2,9 @@
 
 ![Alt text](http://i.imgur.com/VLLKBYD.png "Plot Example")
 
+#### *Important*
+*Your FIO JOBFILE should reference a `directory=/my/mounted/volume" to test against docker volumes
+
 ### To use with docker-machine
 
 You can use a remote fit configuration file using the REMOTEFILES env variable.
