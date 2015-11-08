@@ -8,23 +8,28 @@
 1. Build the images or use the public images
 2. Create a [Fio Jobfile](http://www.bluestop.org/fio/HOWTO.txt)
 3. Run the `fio-tool` image
+
   ```
   docker run -v /tmp/fio-data:/tmp/fio-data -e JOBFILES=<your-fio-jobfile> wallnerryan/fio-tool
   ```
 If your file is a remote raw text file, you can use REMOTEFILES 
+
   ```
   docker run -v /tmp/fio-data:/tmp/fio-data -e REMOTEFILES="http://url.com/<your-job>.fio \
   -e JOBFILES=<your-fio-jobfile> fio-tool
   ```
 4. Run the `fio-genplots` script
+
   ```
   docker run -v /tmp/fio-data:/tmp/fio-data fio-genplots -t <your-graph-name> <fio2gnuplot options>
   ```
 5. Serve your Graph Images and Log Files
+
   ```
   docker run -p 8000:8000 -d -v /tmp/fio-data:/tmp/fio-data fio-plotserve
   ```
 6. Optionally, run the "all in one" to do all of the above.
+
   ```
   docker run -p 8000:8000 -v /tmp/fio-data:/tmp/fio-data -e REMOTEFILES="http://url.com/<your-job>.fio \
   JOBFILES=<your-fio-jobfile> -d --name MyFioTest fiotools-aio
