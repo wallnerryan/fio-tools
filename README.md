@@ -1,6 +1,7 @@
 # FIO-Tools
 
-![Alt text](http://i.imgur.com/VLLKBYD.png "Plot Example")
+![Alt text](http://i.imgur.com/3oFD3XP.png "Plot Example")
+![Alt text](http://i.imgur.com/5vUItaO.png "Plot Example")
 
 #### *Important*
 - *Your FIO `JOBFILES` should reference a `directory=/my/mounted/volume" to test against docker volumes
@@ -75,4 +76,4 @@ docker run -p 8000:8000 -d -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-plotse
 - When you serve on port 8000, you will have a list of all logs created and plots created, click on the `.png` files to see graph (see below for example screen)
 
 
-![Alt text](http://i.imgur.com/sTGuS27.png "Served Files")
+![Alt text](http://i.imgur.com/nksQkZi.png "Served Files")
