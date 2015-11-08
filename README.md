@@ -79,6 +79,20 @@ docker run -p 8000:8000 -d \
 wallnerryan/fio-plotserve
 ```
 
+To use the all-in-one image
+```
+docker run \
+-p 8000:8000 \
+-v /tmp/fio-data:/tmp/fio-data \
+-e REMOTEFILES="https://gist.githubusercontent.com/wallnerryan/fd0146ee3122278d7b5f/raw/006ff707bc1a4aae570b33f4f4cd7729f7d88f43/job.fio" \
+-e JOBFILES=job.fio \
+-e PLOTNAME=MyTest \
+—volume-driver flocker \
+-v myvol1:/myvol \
+-d \
+—name MyTest wallnerryan/fiotools-aio
+```
+
 ##### To use with docker-machine/boot2docker
 
 You can use a remote fit configuration file using the REMOTEFILES env variable.
