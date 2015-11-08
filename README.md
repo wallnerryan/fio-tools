@@ -33,10 +33,10 @@ If your file is a remote raw text file, you can use REMOTEFILES
   docker run -p 8000:8000 -d -v /tmp/fio-data:/tmp/fio-data \
   fio-plotserve
   ```
-6. Optionally, run the "all in one" image. (Will auto produce IOPS and BW graphs and serve them)
+6. *Easiest Way*, run the "all in one" image. (Will auto produce IOPS and BW graphs and serve them)
 
   ```
-  docker run -p 8000:8000 -v /tmp/fio-data:/tmp/fio-data \
+  docker run -p 8000:8000 -v /tmp/fio-data \
   -e REMOTEFILES="http://url.com/<your-job>.fio" \
   -e JOBFILES=<your-fio-jobfile> \
   -e PLOTNAME=MyTest \
@@ -47,6 +47,7 @@ If your file is a remote raw text file, you can use REMOTEFILES
 
 ##### *Important*
 - *Your FIO `JOBFILES` should reference a `directory=/my/mounted/volume" to test against docker volumes
+- *If you want to run more than one all-in-one job, just use `-v /tmp/fio-data` instead of `-v /tmp/fio-data:/tmp/fio-data` This is only needed when you run the individual tool images seperately 
 
 ##### To use with docker and docker volumes 
 ```
@@ -79,11 +80,11 @@ docker run -p 8000:8000 -d \
 wallnerryan/fio-plotserve
 ```
 
-To use the all-in-one image
+*To use the all-in-one image*
 ```
 docker run \
 -p 8000:8000 \
--v /tmp/fio-data:/tmp/fio-data \
+-v /tmp/fio-data \
 -e REMOTEFILES="https://gist.githubusercontent.com/wallnerryan/fd0146ee3122278d7b5f/raw/006ff707bc1a4aae570b33f4f4cd7729f7d88f43/job.fio" \
 -e JOBFILES=job.fio \
 -e PLOTNAME=MyTest \
