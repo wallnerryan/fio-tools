@@ -3,9 +3,24 @@
 ![Alt text](http://i.imgur.com/VLLKBYD.png "Plot Example")
 
 #### *Important*
-*Your FIO JOBFILE should reference a `directory=/my/mounted/volume" to test against docker volumes
+- *Your FIO `JOBFILES` should reference a `directory=/my/mounted/volume" to test against docker volumes
 
-### To use with docker-machine
+### To use with docker and docker volumes 
+```
+docker run -e REMOTEFILES="https://gist.githubusercontent.com/wallnerryan/fd0146ee3122278d7b5f/raw/cdd8de476abbecb5fb5c56239ab9b6eb3cec3ed5/job.fio" -v /tmp/fio-data:/tmp/fio-data --volume-driver flocker -v myvol1:/myvol -e JOBFILES=job.fio wallnerryan/fio-tool
+```
+
+To produce graphs, run the genplots container, `-p <pattern of your log files>`
+```
+docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots -t MySimple4kReadTest -b -g -p *_bw*
+```
+
+Simply serve them on port 8000
+```
+docker run -p 8000:8000 -d -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-plotserve
+```
+
+### To use with docker-machine/boot2docker
 
 You can use a remote fit configuration file using the REMOTEFILES env variable.
 ```
@@ -29,11 +44,11 @@ Simply serve them on port 8000
 docker run -v /Users/wallnerryan/Desktop/fio:/tmp/fio-data -d -p 8000:8000 wallnerryan/fio-plotserve
 ```
 
-###  To use not with boot2docker or docker-machine , /tmp/fio-data is a still a VOLUME
+###  To use with docker that is *not* boot2docker or docker-machine , /tmp/fio-data is a still a VOLUME
 
 You can use a remote configuration script
 ```
-docker run -e REMOTEFILES="https://gist.githubusercontent.com/wallnerryan/fd0146ee3122278d7b5f/raw/2eb7d0ae9b77fa5a93662fe8088df2d83fff9ab2/job.fio" -e JOBFILES=job.fio wallnerryan/fio-tool
+docker run -e REMOTEFILES="https://gist.githubusercontent.com/wallnerryan/fd0146ee3122278d7b5f/raw/2eb7d0ae9b77fa5a93662fe8088df2d83fff9ab2/job.fio" -v /tmp/fio-data:/tmp/fio-data -e JOBFILES=job.fio wallnerryan/fio-tool
 ```
 (or)
 
@@ -41,17 +56,17 @@ You can create a directory and put it locally on the server where the container 
 ```
 mkdir /tmp/fio-data
 cp <your FIO job file> /tmp/fio-data/
-docker run -e JOBFILES=<your FIO job> wallnerryan/fio-tool
+docker run -v /tmp/fio-data:/tmp/fio-data -e JOBFILES=<your FIO job> wallnerryan/fio-tool
 ```
 
 To produce graphs, run the genplots container, `-p <pattern of your log files>`
 ```
-docker run wallnerryan/fio-genplots -t MySimple4kReadTest -b -g -p *_bw*
+docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots -t MySimple4kReadTest -b -g -p *_bw*
 ```
 
 Simply serve them on port 8000
 ```
-docker run -p 8000:8000 -d wallnerryan/fio-plotserve
+docker run -p 8000:8000 -d -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-plotserve
 ```
 
 #### Notes
