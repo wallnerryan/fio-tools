@@ -18,7 +18,7 @@ If your file is a remote raw text file, you can use REMOTEFILES
 
   ```
   docker run -v /tmp/fio-data:/tmp/fio-data \
-  -e REMOTEFILES="http://url.com/<your-job>.fio \
+  -e REMOTEFILES="http://url.com/<your-job>.fio" \
   -e JOBFILES=<your-fio-jobfile> fio-tool
   ```
 4. Run the `fio-genplots` script
