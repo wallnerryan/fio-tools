@@ -33,13 +33,13 @@ If your file is a remote raw text file, you can use REMOTEFILES
   docker run -p 8000:8000 -d -v /tmp/fio-data:/tmp/fio-data \
   fio-plotserve
   ```
-6. Optionally, run the "all in one" to do all of the above.
+6. Optionally, run the "all in one" image. (Will auto produce IOPS and BW graphs and serve them)
 
   ```
   docker run -p 8000:8000 -v /tmp/fio-data:/tmp/fio-data \
   -e REMOTEFILES="http://url.com/<your-job>.fio \
   -e JOBFILES=<your-fio-jobfile> \
-  -e PLOTOPTS=<fio2gnuplot-options> \
+  -e PLOTNAME=MyTest \
   -d --name MyFioTest fiotools-aio
   ```
 
