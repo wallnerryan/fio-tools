@@ -32,7 +32,7 @@ If your file is a remote raw text file, you can use REMOTEFILES
 
   ```
   docker run -p 8000:8000 -v /tmp/fio-data:/tmp/fio-data -e REMOTEFILES="http://url.com/<your-job>.fio \
-  JOBFILES=<your-fio-jobfile> -d --name MyFioTest fiotools-aio
+  JOBFILES=<your-fio-jobfile> -e PLOTOPTS=<fio2gnuplot-options> -d --name MyFioTest fiotools-aio
   ```
 
 ### Other Examples
