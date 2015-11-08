@@ -10,29 +10,37 @@
 3. Run the `fio-tool` image
 
   ```
-  docker run -v /tmp/fio-data:/tmp/fio-data -e JOBFILES=<your-fio-jobfile> wallnerryan/fio-tool
+  docker run -v /tmp/fio-data:/tmp/fio-data \
+  -e JOBFILES=<your-fio-jobfile> \
+  wallnerryan/fio-tool
   ```
 If your file is a remote raw text file, you can use REMOTEFILES 
 
   ```
-  docker run -v /tmp/fio-data:/tmp/fio-data -e REMOTEFILES="http://url.com/<your-job>.fio \
+  docker run -v /tmp/fio-data:/tmp/fio-data \
+  -e REMOTEFILES="http://url.com/<your-job>.fio \
   -e JOBFILES=<your-fio-jobfile> fio-tool
   ```
 4. Run the `fio-genplots` script
 
   ```
-  docker run -v /tmp/fio-data:/tmp/fio-data fio-genplots -t <your-graph-name> <fio2gnuplot options>
+  docker run -v /tmp/fio-data:/tmp/fio-data fio-genplots \
+  <fio2gnuplot options>
   ```
 5. Serve your Graph Images and Log Files
 
   ```
-  docker run -p 8000:8000 -d -v /tmp/fio-data:/tmp/fio-data fio-plotserve
+  docker run -p 8000:8000 -d -v /tmp/fio-data:/tmp/fio-data \
+  fio-plotserve
   ```
 6. Optionally, run the "all in one" to do all of the above.
 
   ```
-  docker run -p 8000:8000 -v /tmp/fio-data:/tmp/fio-data -e REMOTEFILES="http://url.com/<your-job>.fio \
-  JOBFILES=<your-fio-jobfile> -e PLOTOPTS=<fio2gnuplot-options> -d --name MyFioTest fiotools-aio
+  docker run -p 8000:8000 -v /tmp/fio-data:/tmp/fio-data \
+  -e REMOTEFILES="http://url.com/<your-job>.fio \
+  -e JOBFILES=<your-fio-jobfile> \
+  -e PLOTOPTS=<fio2gnuplot-options> \
+  -d --name MyFioTest fiotools-aio
   ```
 
 ### Other Examples
