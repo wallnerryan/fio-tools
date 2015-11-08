@@ -12,8 +12,15 @@ docker run -e REMOTEFILES="https://gist.githubusercontent.com/wallnerryan/fd0146
 ```
 
 To produce graphs, run the genplots container, `-p <pattern of your log files>`
+
+*Produce Bandwidth Graphs*
 ```
-docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots -t MySimple4kReadTest -b -g -p *_bw*
+docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots -t My16kAWSRandomReadTest -b -g -p *_bw*
+```
+
+*Produce IOPS graphs*
+```
+docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots -t My16kAWSRandomReadTest -i -g -p *_iops*
 ```
 
 Simply serve them on port 8000
@@ -37,7 +44,7 @@ docker run -v /Users/wallnerryan/Desktop/fio:/tmp/fio-data -e JOBFILES=job.fio w
 
 To produce graphs, run the genplots container, `-p <pattern of your log files>`
 ```
-docker run -v /Users/wallnerryan/Desktop/fio:/tmp/fio-data wallnerryan/fio-genplots -t MySimple4kReadTest -b -g -p *_bw*
+docker run -v /Users/wallnerryan/Desktop/fio:/tmp/fio-data wallnerryan/fio-genplots -t My16kAWSRandomReadTest -b -g -p *_bw*
 ```
 
 Simply serve them on port 8000
@@ -62,7 +69,7 @@ docker run -v /tmp/fio-data:/tmp/fio-data -e JOBFILES=<your FIO job> wallnerryan
 
 To produce graphs, run the genplots container, `-p <pattern of your log files>`
 ```
-docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots -t MySimple4kReadTest -b -g -p *_bw*
+docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots -t My16kAWSRandomReadTest -b -g -p *_bw*
 ```
 
 Simply serve them on port 8000
