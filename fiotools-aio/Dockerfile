@@ -22,5 +22,9 @@ RUN chmod +x /opt/plot.sh
 ADD runall.sh /opt/runall.sh
 RUN chmod +x /opt/runall.sh
 
+# Add modified script to y axis is set accurately
+ADD fio2gnuplot /usr/bin/fio2gnuplot
+RUN chmod +x /usr/bin/fio2gnuplot
+
 EXPOSE 8000
 CMD ["/opt/runall.sh"] 

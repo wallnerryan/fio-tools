@@ -4,7 +4,7 @@
 echo "Running $JOBFILES"
 
 # We really want no old data in here
-rm -rf /tmp/fio-data/
+rm -rf /tmp/fio-data/*
 
 if [ ! -z "$REMOTEFILES" ]; then
     IFS=' '
