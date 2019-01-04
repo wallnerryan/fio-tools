@@ -1,5 +1,5 @@
 FROM python:2.7
-MAINTAINER <Ryan Wallner ryan.wallner@clusterhq.com>
+MAINTAINER <Ryan Wallner ryan.wallner@portworx.com>
 
 VOLUME /tmp/fio-data
 WORKDIR /tmp/fio-data

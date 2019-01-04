@@ -12,26 +12,26 @@
   ```
   docker run -v /tmp/fio-data:/tmp/fio-data \
   -e JOBFILES=<your-fio-jobfile> \
-  clusterhq/fio-tool
+  portworx/fio-tool
   ```
 If your file is a remote raw text file, you can use REMOTEFILES 
 
   ```
   docker run -v /tmp/fio-data:/tmp/fio-data \
   -e REMOTEFILES="http://url.com/<your-job>.fio" \
-  -e JOBFILES=<your-fio-jobfile> clusterhq/fio-tool
+  -e JOBFILES=<your-fio-jobfile> wallnerryan/fio-tool
   ```
 4. Run the `fio-genplots` script
 
   ```
-  docker run -v /tmp/fio-data:/tmp/fio-data clusterhq/fio-genplots \
+  docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots \
   <fio2gnuplot options>
   ```
 5. Serve your Graph Images and Log Files
 
   ```
   docker run -p 8000:8000 -d -v /tmp/fio-data:/tmp/fio-data \
-  clusterhq/fio-plotserve
+  wallnerryan/fio-plotserve
   ```
 6. *Easiest Way*, run the "all in one" image. (Will auto produce IOPS and BW graphs and serve them)
 
@@ -40,10 +40,56 @@ If your file is a remote raw text file, you can use REMOTEFILES
   -e REMOTEFILES="http://url.com/<your-job>.fio" \
   -e JOBFILES=<your-fio-jobfile> \
   -e PLOTNAME=MyTest \
-  -d --name MyFioTest clusterhq/fiotools-aio
+  -d --name MyFioTest wallnerryan/fiotools-aio
   ```
 
 ### Other Examples
+
+#### To use with Kubernetes
+
+Use a `Deployment`
+
+```
+kubectl apply -f kubernetes/fiotools-aio-portworx-read.yaml
+storageclass.storage.k8s.io "fio-tester-class-read" created
+persistentvolumeclaim "fio-data-read" created
+deployment.extensions "fio-tester-read" created
+service "fiotools-read" created
+
+kubectl apply -f kubernetes/fiotools-aio-portworx-write.yaml
+storageclass.storage.k8s.io "fio-tester-class-write" created
+persistentvolumeclaim "fio-data-write" created
+deployment.extensions "fio-tester-write" created
+service "fiotools-write" created
+
+kubectl get svc fiotools-read
+kubectl get svc fiotools-write
+```
+
+Access the Output
+
+`kubectl port-forward service/fiotools-read  8001:8001`
+Visit http://localhost:8001
+
+`kubectl port-forward service/fiotools-write  8000:8000`
+Visit http://localhost:8000
+
+OR
+
+Visit http://<Node-IP>:[8000|8001] as long as the firewall allows `8000 and 8001` to the workers.
+
+
+> Note, you can change the `ENV` variables to submit a new job. Just provide a new job url to `REMOTEFILES` and update the name of `JOBFILES` to the name of the `.fio` file and provide and optional new `PLOTNAME`
+
+```
+env:
+  - name: REMOTEFILES
+    value: "https://gist.githubusercontent.com/wallnerryan/06cb07d3d8bee67af025a60a88da053f/raw/a46d97f30b79c2a2a6b42333e7114d85e84c450f/editablejob.fio"
+  - name: JOBFILES
+    value: editablejob.fio
+  - name: PLOTNAME
+    value: editablejob
+```
 
 ##### *Important*
 - *Your FIO `JOBFILES` should reference a `directory=/my/mounted/volume" to test against docker volumes
@@ -56,20 +102,20 @@ docker run \
 -v /tmp/fio-data:/tmp/fio-data \
 --volume-driver flocker \
 -v myvol1:/myvol \
--e JOBFILES=job.fio clusterhq/fio-tool
+-e JOBFILES=job.fio wallnerryan/fio-tool
 ```
 
 To produce graphs, run the genplots container, `-p <pattern of your log files>`
 
 *Produce Bandwidth Graphs*
 ```
-docker run -v /tmp/fio-data:/tmp/fio-data clusterhq/fio-genplots \
+docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots \
 -t My16kAWSRandomReadTest -b -g -p *_bw*
 ```
 
 *Produce IOPS graphs*
 ```
-docker run -v /tmp/fio-data:/tmp/fio-data clusterhq/fio-genplots \
+docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots \
 -t My16kAWSRandomReadTest -i -g -p *_iops*
 ```
 
@@ -77,7 +123,7 @@ Simply serve them on port 8000
 ```
 docker run -p 8000:8000 -d \
 -v /tmp/fio-data:/tmp/fio-data \
-clusterhq/fio-plotserve
+wallnerryan/fio-plotserve
 ```
 
 *To use the all-in-one image*
@@ -91,7 +137,7 @@ docker run \
 —volume-driver flocker \
 -v myvol1:/myvol \
 -d \
-—name MyTest clusterhq/fiotools-aio
+—name MyTest wallnerryan/fiotools-aio
 ```
 
 ##### To use with docker-machine/boot2docker
@@ -102,7 +148,7 @@ docker run \
 -e REMOTEFILES="https://gist.githubusercontent.com/wallnerryan/fd0146ee3122278d7b5f/raw/d089b6321746fe2928ce3f89fe64b437d1f669df/job.fio" \
 -e JOBFILES=job.fio \
 -v /Users/wallnerryan/Desktop/fio:/tmp/fio-data \
-clusterhq/fio-tool
+wallnerryan/fio-tool
 ```
 
 (or)
@@ -110,20 +156,20 @@ clusterhq/fio-tool
 If you have a directory that already has them in it
 ```
 docker run -v /Users/wallnerryan/Desktop/fio:/tmp/fio-data \
--e JOBFILES=job.fio clusterhq/fio-tool
+-e JOBFILES=job.fio wallnerryan/fio-tool
 ```
 
 To produce graphs, run the genplots container, `-p <pattern of your log files>`
 ```
 docker run \
--v /Users/wallnerryan/Desktop/fio:/tmp/fio-data clusterhq/fio-genplots \
+-v /Users/wallnerryan/Desktop/fio:/tmp/fio-data wallnerryan/fio-genplots \
 -t My16kAWSRandomReadTest -b -g -p *_bw*
 ```
 
 Simply serve them on port 8000
 ```
 docker run -v /Users/wallnerryan/Desktop/fio:/tmp/fio-data \
--d -p 8000:8000 clusterhq/fio-plotserve
+-d -p 8000:8000 wallnerryan/fio-plotserve
 ```
 
 #####  To use with docker that is *not* boot2docker or docker-machine , /tmp/fio-data is a still a VOLUME
@@ -133,7 +179,7 @@ You can use a remote configuration script
 docker run \
 -e REMOTEFILES="https://gist.githubusercontent.com/wallnerryan/fd0146ee3122278d7b5f/raw/2eb7d0ae9b77fa5a93662fe8088df2d83fff9ab2/job.fio" \
 -v /tmp/fio-data:/tmp/fio-data \
--e JOBFILES=job.fio clusterhq/fio-tool
+-e JOBFILES=job.fio wallnerryan/fio-tool
 ```
 (or)
 
@@ -142,19 +188,19 @@ You can create a directory and put it locally on the server where the container 
 mkdir /tmp/fio-data
 cp <your FIO job file> /tmp/fio-data/
 docker run -v /tmp/fio-data:/tmp/fio-data \
--e JOBFILES=<your FIO job> clusterhq/fio-tool
+-e JOBFILES=<your FIO job> wallnerryan/fio-tool
 ```
 
 To produce graphs, run the genplots container, `-p <pattern of your log files>`
 ```
-docker run -v /tmp/fio-data:/tmp/fio-data clusterhq/fio-genplots \
+docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots \
 -t My16kAWSRandomReadTest -b -g -p *_bw*
 ```
 
 Simply serve them on port 8000
 ```
 docker run -p 8000:8000 -d \
-clusterhq/fio-plotserve
+wallnerryan/fio-plotserve
 ```
 
 ###### Notes
@@ -164,3 +210,6 @@ clusterhq/fio-plotserve
 
 
 ![Alt text](http://i.imgur.com/nksQkZi.png "Served Files")
+
+**bw= and BW= explained**
+ - https://www.spinics.net/lists/fio/msg05517.html 

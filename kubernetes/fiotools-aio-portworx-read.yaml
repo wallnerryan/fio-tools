@@ -1,0 +1,81 @@
+
+kind: StorageClass
+apiVersion: storage.k8s.io/v1beta1
+metadata:
+    name: fio-tester-class-read
+provisioner: kubernetes.io/portworx-volume
+parameters:
+   repl: "1"
+
+---
+
+##### Portworx persistent volume claim
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+   name: fio-data-read
+   annotations:
+     volume.beta.kubernetes.io/storage-class: fio-tester-class-read
+spec:
+   accessModes:
+     - ReadWriteOnce
+   resources:
+     requests:
+       storage: 20Gi
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: fio-tester-read
+  labels:
+    purpose: fio-testing-read
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: fio-testing-read
+    spec:
+      containers:
+      - name: fio-container
+        image: wallnerryan/fiotools-aio
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - name: fio-data
+          mountPath: /myvol
+        env:
+          - name: REMOTEFILES
+            value: "https://gist.githubusercontent.com/wallnerryan/85cb360780d5003382b2ac405fd8013c/raw/542a1b91af45bd6461d11687a1593fb43e811a42/read.fio"
+          - name: JOBFILES
+            value: read.fio
+          - name: PLOTNAME
+            value: read
+      volumes:
+      - name: fio-data
+        persistentVolumeClaim:
+          claimName: fio-data-read
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: fiotools-read
+  labels:
+    name: fiotools-read
+spec:
+  type: NodePort
+  ports:
+    - port: 8001
+      targetPort: 8000
+      name: http
+  selector:
+    app: fio-testing-read

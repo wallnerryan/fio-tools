@@ -1,0 +1,81 @@
+
+kind: StorageClass
+apiVersion: storage.k8s.io/v1beta1
+metadata:
+    name: fio-tester-class-write
+provisioner: kubernetes.io/portworx-volume
+parameters:
+   repl: "1"
+
+---
+
+##### Portworx persistent volume claim
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+   name: fio-data-write
+   annotations:
+     volume.beta.kubernetes.io/storage-class: fio-tester-class-write
+spec:
+   accessModes:
+     - ReadWriteOnce
+   resources:
+     requests:
+       storage: 20Gi
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: fio-tester-write
+  labels:
+    purpose: fio-testing-write
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: fio-testing-write
+    spec:
+      containers:
+      - name: fio-container
+        image: wallnerryan/fiotools-aio
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - name: fio-data
+          mountPath: /myvol
+        env:
+          - name: REMOTEFILES
+            value: "https://gist.githubusercontent.com/wallnerryan/cb8f9946a6fb9bdc0aabd403d9550e08/raw/d2d1ae390bf43d75e8a4c4cc3dcb9e0f32adf343/seqwrite.fio"
+          - name: JOBFILES
+            value: seqwrite.fio
+          - name: PLOTNAME
+            value: seqwrite
+      volumes:
+      - name: fio-data
+        persistentVolumeClaim:
+          claimName: fio-data-write
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: fiotools-write
+  labels:
+    name: fiotools-write
+spec:
+  type: NodePort
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: http
+  selector:
+    app: fio-testing-write

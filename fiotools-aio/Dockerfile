@@ -1,8 +1,5 @@
-FROM ubuntu:14.10
-MAINTAINER <Ryan Wallner ryan.wallner@clusterhq.com>
-
-RUN sed -i -e 's/archive.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-RUN apt-get -y update && apt-get -y install fio wget python2.7 gnuplot
+FROM base-fiotools
+MAINTAINER <Ryan Wallner ryan.wallner@portworx.com>
 
 # Check ENV vars
 ADD check.sh /opt/check.sh
@@ -23,7 +20,7 @@ ADD runall.sh /opt/runall.sh
 RUN chmod +x /opt/runall.sh
 
 # Add modified script to y axis is set accurately
-ADD fio2gnuplot /usr/bin/fio2gnuplot
+ADD lib/fio2gnuplot /usr/bin/fio2gnuplot
 RUN chmod +x /usr/bin/fio2gnuplot
 
 EXPOSE 8000
