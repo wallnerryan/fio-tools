@@ -53,7 +53,7 @@ spec:
           mountPath: /myvol
         env:
           - name: REMOTEFILES
-            value: "https://gist.githubusercontent.com/wallnerryan/cb8f9946a6fb9bdc0aabd403d9550e08/raw/d2d1ae390bf43d75e8a4c4cc3dcb9e0f32adf343/seqwrite.fio"
+            value: "https://gist.githubusercontent.com/wallnerryan/cb8f9946a6fb9bdc0aabd403d9550e08/raw/31308d8139718901c1b53c9dea33526cf591881d/seqwrite.fio"
           - name: JOBFILES
             value: seqwrite.fio
           - name: PLOTNAME

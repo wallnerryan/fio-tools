@@ -53,7 +53,7 @@ spec:
           mountPath: /myvol
         env:
           - name: REMOTEFILES
-            value: "https://gist.githubusercontent.com/wallnerryan/85cb360780d5003382b2ac405fd8013c/raw/542a1b91af45bd6461d11687a1593fb43e811a42/read.fio"
+            value: "https://gist.githubusercontent.com/wallnerryan/85cb360780d5003382b2ac405fd8013c/raw/ced535b036a7eeecc977703d8d950da755552b0a/read.fio"
           - name: JOBFILES
             value: read.fio
           - name: PLOTNAME
