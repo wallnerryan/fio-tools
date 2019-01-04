@@ -6,7 +6,7 @@
 ## How to use this repo
 
 1. Build the images or use the public images
-2. Create a [Fio Jobfile](http://www.bluestop.org/fio/HOWTO.txt)
+2. Create a [Fio Jobfile](https://media.readthedocs.org/pdf/fio/latest/fio.pdf)
 3. Run the `fio-tool` image
 
   ```
