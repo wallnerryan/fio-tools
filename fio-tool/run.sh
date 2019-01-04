@@ -18,4 +18,4 @@ if [ ! -z "$REMOTEFILES" ]; then
     done 
 fi
 
-fio $JOBFILES 
+fio --output=fio.output $JOBFILES 

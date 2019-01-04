@@ -1,3 +1,3 @@
 #!/bin/bash
 
-fio $JOBFILES 
+fio --output=fio.output $JOBFILES 
