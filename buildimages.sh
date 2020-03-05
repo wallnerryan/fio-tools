@@ -1,7 +1,6 @@
 #!/bin/bash
 
 echo "Enter your Dockerhub Username or a prefix for the images..."
-read DOCKERHUB_USERNAME
 DOCKERHUB_USERNAME=${DOCKERHUB_USERNAME:-myfiotools}
 
 docker build -t base-fiotools base-fiotools/
