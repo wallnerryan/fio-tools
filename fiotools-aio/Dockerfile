@@ -1,27 +1,23 @@
-FROM base-fiotools
-MAINTAINER <Ryan Wallner ryan.wallner@portworx.com>
+# syntax=docker/dockerfile:1.6
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+LABEL maintainer="Ryan Wallner <ryan.wallner@portworx.com>"
 
-# Check ENV vars
-ADD check.sh /opt/check.sh
-RUN chmod +x /opt/check.sh
 
-# Run the FIO Job
-VOLUME /tmp/fio-data
-ADD run.sh /opt/run.sh
-RUN chmod +x /opt/run.sh
-WORKDIR /tmp/fio-data
+# All-in-one: check -> run fio -> plot -> serve on 8000
+# set owner and mode when copying
+COPY run.sh   /opt/run.sh
+COPY plot.sh  /opt/plot.sh
+COPY check.sh /opt/check.sh
+COPY runall.sh /opt/runall.sh
 
-# Generate plots
-ADD plot.sh /opt/plot.sh
-RUN chmod +x /opt/plot.sh
+RUN chmod +x /opt/*.sh
 
-# Add all-in-one script
-ADD runall.sh /opt/runall.sh
-RUN chmod +x /opt/runall.sh
-
-# Add modified script to y axis is set accurately
-ADD lib/fio2gnuplot /usr/bin/fio2gnuplot
-RUN chmod +x /usr/bin/fio2gnuplot
+# Fio2gnuplot helper (already in repo)
+# If this file is located at the repo root as before, this copies it in.
+COPY lib/fio2gnuplot /usr/local/bin/fio2gnuplot
+RUN chmod +x /usr/local/bin/fio2gnuplot || true
 
 EXPOSE 8000
-CMD ["/opt/runall.sh"] 
+WORKDIR /tmp/fio-data
+CMD ["/opt/runall.sh"]

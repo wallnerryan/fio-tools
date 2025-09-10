@@ -12,7 +12,7 @@
   ```
   docker run -v /tmp/fio-data:/tmp/fio-data \
   -e JOBFILES=<your-fio-jobfile> \
-  portworx/fio-tool
+  wallnerryan/fio-tool
   ```
 If your file is a remote raw text file, you can use REMOTEFILES 
 
@@ -24,8 +24,7 @@ If your file is a remote raw text file, you can use REMOTEFILES
 4. Run the `fio-genplots` script
 
   ```
-  docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots \
-  <fio2gnuplot options>
+  docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots
   ```
 5. Serve your Graph Images and Log Files
 
@@ -98,25 +97,21 @@ env:
 ##### To use with docker and docker volumes 
 ```
 docker run \
--e REMOTEFILES="https://gist.githubusercontent.com/wallnerryan/fd0146ee3122278d7b5f/raw/cdd8de476abbecb5fb5c56239ab9b6eb3cec3ed5/job.fio" \
--v /tmp/fio-data:/tmp/fio-data \
---volume-driver flocker \
+-p 8000:8000 \
+-v /tmp/fio-data \
+-e REMOTEFILES="https://gist.githubusercontent.com/wallnerryan/6bcfec794cbaef9a86569d5553b156b3/raw/8a6f5a6cb924f493a095b5077ed402d71a333b52/realworld.fio" \
+-e JOBFILES=realworld.fio \
+-e PLOTNAME=MyTest \
 -v myvol1:/myvol \
--e JOBFILES=job.fio wallnerryan/fio-tool
+-d \
+--name MyTest wallnerryan/fiotools-aio
 ```
 
-To produce graphs, run the genplots container, `-p <pattern of your log files>`
+To produce graphs, run the genplots container
 
-*Produce Bandwidth Graphs*
+*Produce IOPS/Bandwidth Graphs*
 ```
-docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots \
--t My16kAWSRandomReadTest -b -g -p *_bw*
-```
-
-*Produce IOPS graphs*
-```
-docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots \
--t My16kAWSRandomReadTest -i -g -p *_iops*
+docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots 
 ```
 
 Simply serve them on port 8000
@@ -156,14 +151,13 @@ wallnerryan/fio-tool
 If you have a directory that already has them in it
 ```
 docker run -v /Users/wallnerryan/Desktop/fio:/tmp/fio-data \
--e JOBFILES=job.fio wallnerryan/fio-tool
+-e JOBFILES=job.fio fiotools/fio-tool
 ```
 
-To produce graphs, run the genplots container, `-p <pattern of your log files>`
+To produce graphs, run the genplots container
 ```
 docker run \
--v /Users/wallnerryan/Desktop/fio:/tmp/fio-data wallnerryan/fio-genplots \
--t My16kAWSRandomReadTest -b -g -p *_bw*
+-v /Users/wallnerryan/Desktop/fio:/tmp/fio-data wallnerryan/fio-genplots 
 ```
 
 Simply serve them on port 8000
@@ -191,10 +185,9 @@ docker run -v /tmp/fio-data:/tmp/fio-data \
 -e JOBFILES=<your FIO job> wallnerryan/fio-tool
 ```
 
-To produce graphs, run the genplots container, `-p <pattern of your log files>`
+To produce graphs, run the genplots container
 ```
-docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots \
--t My16kAWSRandomReadTest -b -g -p *_bw*
+docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots 
 ```
 
 Simply serve them on port 8000
@@ -213,3 +206,8 @@ wallnerryan/fio-plotserve
 
 **bw= and BW= explained**
  - https://www.spinics.net/lists/fio/msg05517.html 
+
+
+**build**
+
+`env bash ./buildimages.sh`
