@@ -12,7 +12,7 @@
   ```
   docker run -v /tmp/fio-data:/tmp/fio-data \
   -e JOBFILES=<your-fio-jobfile> \
-  portworx/fio-tool
+  wallnerryan/fio-tool
   ```
 If your file is a remote raw text file, you can use REMOTEFILES 
 
@@ -24,8 +24,7 @@ If your file is a remote raw text file, you can use REMOTEFILES
 4. Run the `fio-genplots` script
 
   ```
-  docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots \
-  <fio2gnuplot options>
+  docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots
   ```
 5. Serve your Graph Images and Log Files
 
@@ -98,25 +97,21 @@ env:
 ##### To use with docker and docker volumes 
 ```
 docker run \
--e REMOTEFILES="https://gist.githubusercontent.com/wallnerryan/fd0146ee3122278d7b5f/raw/cdd8de476abbecb5fb5c56239ab9b6eb3cec3ed5/job.fio" \
--v /tmp/fio-data:/tmp/fio-data \
---volume-driver flocker \
+-p 8000:8000 \
+-v /tmp/fio-data \
+-e REMOTEFILES="https://gist.githubusercontent.com/wallnerryan/6bcfec794cbaef9a86569d5553b156b3/raw/8a6f5a6cb924f493a095b5077ed402d71a333b52/realworld.fio" \
+-e JOBFILES=realworld.fio \
+-e PLOTNAME=MyTest \
 -v myvol1:/myvol \
--e JOBFILES=job.fio wallnerryan/fio-tool
+-d \
+--name MyTest wallnerryan/fiotools-aio
 ```
 
-To produce graphs, run the genplots container, `-p <pattern of your log files>`
+To produce graphs, run the genplots container
 
-*Produce Bandwidth Graphs*
+*Produce IOPS/Bandwidth Graphs*
 ```
-docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots \
--t My16kAWSRandomReadTest -b -g -p *_bw*
-```
-
-*Produce IOPS graphs*
-```
-docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots \
--t My16kAWSRandomReadTest -i -g -p *_iops*
+docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots 
 ```
 
 Simply serve them on port 8000
@@ -156,14 +151,13 @@ wallnerryan/fio-tool
 If you have a directory that already has them in it
 ```
 docker run -v /Users/wallnerryan/Desktop/fio:/tmp/fio-data \
--e JOBFILES=job.fio wallnerryan/fio-tool
+-e JOBFILES=job.fio fiotools/fio-tool
 ```
 
-To produce graphs, run the genplots container, `-p <pattern of your log files>`
+To produce graphs, run the genplots container
 ```
 docker run \
--v /Users/wallnerryan/Desktop/fio:/tmp/fio-data wallnerryan/fio-genplots \
--t My16kAWSRandomReadTest -b -g -p *_bw*
+-v /Users/wallnerryan/Desktop/fio:/tmp/fio-data wallnerryan/fio-genplots 
 ```
 
 Simply serve them on port 8000
@@ -191,10 +185,9 @@ docker run -v /tmp/fio-data:/tmp/fio-data \
 -e JOBFILES=<your FIO job> wallnerryan/fio-tool
 ```
 
-To produce graphs, run the genplots container, `-p <pattern of your log files>`
+To produce graphs, run the genplots container
 ```
-docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots \
--t My16kAWSRandomReadTest -b -g -p *_bw*
+docker run -v /tmp/fio-data:/tmp/fio-data wallnerryan/fio-genplots 
 ```
 
 Simply serve them on port 8000
@@ -213,3 +206,220 @@ wallnerryan/fio-plotserve
 
 **bw= and BW= explained**
  - https://www.spinics.net/lists/fio/msg05517.html 
+
+
+## Build
+
+This repo ships a single orchestrator script, `buildimages.sh`, that builds all the fio-tools images in the correct order, either **locally** (single-arch) or as a **multi-arch** build with a **push to Docker Hub**.
+
+It solves common pitfalls like:
+- child images failing with `FROM ${BASE_IMAGE}` because the base isn’t visible to BuildKit
+- builder/context confusion on Docker Desktop
+- reliably wiring build args (gnuplot/python versions) through the whole stack
+
+---
+
+## What it builds
+
+The script builds these images (in order):
+
+1. `base-fiotools`  → foundation image (gnuplot built from source, Python tuned, etc.)
+2. `fio-genplots`   → plotting helper
+3. `fio-tool`       → runner
+4. `fio-plotserve`  → plot web server
+5. `fiotools-aio`   → all-in-one image
+
+All dependent Dockerfiles use:
+
+```dockerfile
+# syntax=docker/dockerfile:1.6
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+```
+
+The script passes `--build-arg BASE_IMAGE=<tag>` so each layer builds against the **just-built base** (local mode) or the **just-pushed base** (push mode).
+
+---
+
+## Prerequisites
+
+- Docker Desktop or Docker Engine 24+ (with `docker buildx` bundled)
+- (For multi-arch) QEMU emulation: the script sets it up automatically with `tonistiigi/binfmt`
+- (For push) Docker Hub login: `docker login`
+
+---
+
+## Modes
+
+### 1) Local build (default)
+- `FIOTOOLS_DOCKERHUB_PUSH=false` (or unset)
+- Uses **classic `docker build`** so `FROM ${BASE_IMAGE}` resolves to the **local** tag you just built.
+- **Single-arch only**: `PLATFORMS` **must match the host** (e.g. `linux/amd64` on Intel, `linux/arm64` on Apple Silicon).
+
+### 2) Multi-arch + push
+- `FIOTOOLS_DOCKERHUB_PUSH=true`
+- Uses **buildx** with a **container driver**, builds **multi-arch** and **pushes** to Docker Hub.
+- Base is pushed first; dependents then **pull** that base by tag.
+
+---
+
+## Environment variables
+
+| Var | Default | Purpose |
+|---|---|---|
+| `FIOTOOLS_DOCKERHUB_USERNAME` | `fiotools` | Docker Hub namespace/repo prefix |
+| `FIOTOOLS_DOCKERHUB_TAG` | `tag` | Tag applied to all images |
+| `FIOTOOLS_DOCKERHUB_PUSH` | `false` | `true` = multi-arch buildx build + push |
+| `PLATFORMS` | `linux/amd64,linux/arm64` | Target platforms (push mode). In local mode, **must equal host**. |
+| `DOCKER_CONTEXT` | `default` | Docker context used by the script |
+| `GNUPLOT_VERSION` | `5.4.10` | Built from source in `base-fiotools` |
+| `PY_VER` | `3.12.5` | CPython version compiled in `base-fiotools` |
+
+---
+
+## Usage
+
+### Local single-arch (build into your daemon)
+```bash
+# Pick the platform that matches your host CPU
+export PLATFORMS=linux/amd64        # on Intel/Linux/Windows
+# or
+export PLATFORMS=linux/arm64        # on Apple Silicon
+
+export FIOTOOLS_DOCKERHUB_USERNAME=<insert>
+export FIOTOOLS_DOCKERHUB_TAG=<tag>
+export FIOTOOLS_DOCKERHUB_PUSH=false
+
+./buildimages.sh
+```
+
+You’ll end up with locally available images like:
+```
+wallnerryan/base-fiotools:fio336alpinev2
+wallnerryan/fio-genplots:fio336alpinev2
+wallnerryan/fio-tool:fio336alpinev2
+wallnerryan/fio-plotserve:fio336alpinev2
+wallnerryan/fiotools-aio:fio336alpinev2
+```
+
+### Multi-arch push (amd64 + arm64)
+```bash
+export FIOTOOLS_DOCKERHUB_USERNAME=<user>
+export FIOTOOLS_DOCKERHUB_TAG=<tag>
+export FIOTOOLS_DOCKERHUB_PUSH=true
+export PLATFORMS=linux/amd64,linux/arm64
+
+docker login
+./buildimages.sh
+```
+
+This will:
+1) build & **push** `wallnerryan/base-fiotools:fio336alpinev2` for both arches  
+2) build & **push** the remaining images using that base
+
+---
+
+## Customizing versions
+
+Override at runtime:
+
+```bash
+export GNUPLOT_VERSION=5.4.11
+export PY_VER=3.12.7
+./buildimages.sh
+```
+
+Both values are passed as `--build-arg`s into `base-fiotools`.
+
+---
+
+## Common pitfalls & fixes
+
+- **“not found … base-fiotools:TAG” during dependent build**  
+  You ran a buildx containerized build that can’t see your local daemon image.  
+  ✅ Use local mode (default) → script runs **classic `docker build`** for all images, or  
+  ✅ Use push mode so dependents **pull** the base from the registry.
+
+- **“additional instances of driver ‘docker’ cannot be created”**  
+  Old builders/contexts cause conflicts. The script avoids these, but if you hit leftovers:
+  ```bash
+  docker buildx ls
+  docker buildx rm <stale-builder-name>
+  docker context use default
+  ```
+
+- **“use \`docker context use default\`”**  
+  You’re on a non-default context. Either:
+  ```bash
+  docker context use default
+  ```
+  or set `DOCKER_CONTEXT`:
+  ```bash
+  export DOCKER_CONTEXT=default
+  ./buildimages.sh
+  ```
+
+- **Local mode with mismatched PLATFORMS**  
+  Local `--load` can only load the host’s architecture. Set:
+  ```bash
+  export PLATFORMS=$(uname -m | grep -qi arm && echo linux/arm64 || echo linux/amd64)
+  ```
+
+---
+
+## What changed vs. naive buildx flows?
+
+- Local builds use **classic `docker build`** so your `FROM ${BASE_IMAGE}` can reference the **locally built tag**.
+- Multi-arch builds use a **single containerized builder** that can **push**, ensuring dependents can pull the just-pushed base.
+
+---
+
+## Outputs & naming
+
+All images are tagged as:
+```
+<NS>/<component>:<TAG>
+```
+Where `<NS>` = `FIOTOOLS_DOCKERHUB_USERNAME`, `<TAG>` = `FIOTOOLS_DOCKERHUB_TAG`.
+
+---
+
+## Clean up
+
+To remove the buildx builder created by push mode (optional):
+```bash
+docker buildx rm fiotools || true
+```
+
+To reset contexts:
+```bash
+docker context use default
+```
+
+#### Force a clean rebuild (no cache) locally:
+
+`NO_CACHE=1 ./buildimages.sh`
+
+
+Also force parent pulls (ignore base-layer cache):
+
+`NO_CACHE=1 PULL_BASE=1 ./buildimages.sh`
+
+
+Multi-arch push with no cache:
+
+`FIOTOOLS_DOCKERHUB_PUSH=true NO_CACHE=true PULL_BASE=true ./buildimages.sh`
+
+Optional: completely nuke buildx caches
+
+If you want to also wipe any persisted builder caches:
+
+`docker --context "$DOCKER_CONTEXT" buildx prune -af`
+
+---
+
+## Security notes
+
+- `base-fiotools` builds **gnuplot from source** and compiles **CPython** so you can avoid CVEs seen in Alpine’s prebuilt stacks.
+- You can bump `GNUPLOT_VERSION` and `PY_VER` to pick up upstream fixes quickly.
+- Downstream images inherit from the base—so security improvements are centralized.

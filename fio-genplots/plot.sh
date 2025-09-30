@@ -97,4 +97,3 @@ if [ -n "$LAT_LOGS" ] && [ -n "$HAS_LAT" ]; then
 fi
 
 cd ..
-
